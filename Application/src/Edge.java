@@ -8,7 +8,7 @@
  *
  * @see Vertex
  */
-class Edge
+class Edge implements Comparable<Edge>
 {
     protected Vertex destination;   // Other destination in edge
     protected double cost;          // Price of the path
@@ -17,5 +17,10 @@ class Edge
     {
         destination = v;
         cost = c;
+    }
+
+    public int compareTo( Edge rhs ) {
+        double othercost = rhs.cost;
+        return cost < othercost ? -1 : cost > othercost ? 1 : 0;
     }
 }

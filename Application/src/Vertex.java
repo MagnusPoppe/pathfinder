@@ -11,7 +11,7 @@ import java.util.List;
  *
  * @see Edge
  */
-class Vertex
+class Vertex implements Comparable<Vertex>
 {
     protected String      name;
     protected List<Edge>  adj;
@@ -32,5 +32,12 @@ class Vertex
         previous = null;
         // pos = null;
         scratch = false;
+    }
+
+    @Override
+    public int compareTo(Vertex o) {
+        if (distance < o.distance) return -1;
+        else if (distance > o.distance) return 1;
+        else return 0;
     }
 }

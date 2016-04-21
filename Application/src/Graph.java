@@ -1,207 +1,162 @@
+import java.io.File;
+import java.io.FileReader;
+import java.io.IOException;
 import java.util.*;
 
 /**
- * Created by Magnus Poppe Wang on 18.04.2016.
- * @author Magnus Poppe Wang
- *
- *
- *
+ * Created by Magnu on 21.04.2016.
  */
-public class Graph
-{
-    /**
-     * The default cost of an edge.
-     */
-    public static final double INFINITY = Double.MAX_VALUE;
+ class Graph {
 
-    /**
-     * The dictionary contains a list of all registered
-     * members of the map that we are analyzing.
-     */
-    private Map<String, Vertex> dictionary = new HashMap<>();
+    // KONSTANTER:
+    final static double INFINITY = Double.MAX_VALUE;
 
-    /**
-     * Adds an edge to the structure.
-     *
-     * @param name of source vertex
-     * @param destName of destination vertex
-     * @param cost of using the path.
-     */
-    public void addEdge( String name, String destName, double cost)
+    // OTHER:
+    Map<String, Vertex> map = new HashMap<>();
+    int nodes;
+
+    // KONSTRUKTØR:
+    Graph(String filename)
     {
-        Vertex source       = dictionary.get( name );
-        Vertex destination  = dictionary.get( destName );
-
-        source.adj.add( new Edge( destination, cost ) );
-    }
-
-    public void print( Vertex destination )
-    {
-        if (destination.previous != null)
-        {
-            printPath( destination.previous.name );
-            System.out.println( " to " );
+        Scanner reader;
+        try {
+            File file = new File(filename);
+            FileReader fileReader = new FileReader(file);
+            reader = new Scanner(fileReader);
         }
-        System.out.println( destination.name );
-    }
-
-    private void printPath( String destinationName )
-    {
-        Vertex w = dictionary.get( destinationName );
-
-        if ( w == null )
-        {
-            throw new NoSuchElementException( "" );
-        }
-        else if (w.distance == INFINITY)
-        {
-            System.out.println( w.name + " is unreachable.");
-        }
-        else
-        {
-            System.out.println( "( Cost is: " + w.distance + " ) " );
-            print(w);
-            System.out.println( );
+        catch (IOException error) {
+            System.out.println("Something went wrong with file: "+error);
+            return;
         }
 
-    }
+        // GETTING NUMBER OF NODES FROM FILE.
+        String line = "";
+        if (reader.hasNextLine( )) line = reader.nextLine();
 
-    private void clear()
-    {
-        for (Vertex node : dictionary.values())
-        {
-            node.reset();
+        try {
+            this.nodes = Integer.parseInt(line);
         }
-    }
-    /** UVEKTET:
-     * Kode til søkealgoritmen for uvektet søkemetode.
-     * Uvektet søking er når man bruker node -> node sortering
-     * slik at avstanden mellom to noder er alltid 1.
-     *
-     * DETTE ER NIVÅORDEN TRAVERSERING AV ET SLAGS B-TRE. DETTE
-     * KALLES BREDDE FØRST.
-     */
-    public void unweighted( String startName ) throws Exception
-    {
-        // CLEARS ALL NODES OF EARLIER DATA
-        clear( );
-
-        // GETS STARTING POSITION:
-        Vertex start = dictionary.get(startName);
-        if (start == null)
-        {
-            throw new Exception( "Not a valid start-destination name." );
+        catch (ArithmeticException error) {
+            System.out.println("File format error, first line is not number of nodes.");
+            return;
         }
 
-        // INITIATES STARTER VALUES FOR THE QUEUE
-        Queue<Vertex> queue = new LinkedList<>();
-        queue.add( start );
-
-        start.distance = 0; // ZERO DISTANCE TO IT SELF.
-
-        // STARTS THE PATHFINDING:
-        while ( !queue.isEmpty( ) )
+        // SETTING UP THE MAP:
+        while (reader.hasNextLine())
         {
-            // GETTING NEXT ELEMENT IN QUEUE:
-            Vertex current = queue.remove( );
+            // GETTING NODES FROM FILE:
+            String[] path = reader.nextLine().split(" ");
 
-            // CHECKING ALL NEIGHBOURS FOR SHORT PATHS:
-            for (Edge e : current.adj)
-            {
-
-                // GETTING DESTINATION NODE:
-                Vertex other = e.destination;
-
-                // IF INFINITY, PROCESS. ELSE, IGNORE.
-                if( other.distance == INFINITY)
-                {
-                    // INCREASING DISTANCE AND QUEUING:
-                    other.distance = current.distance +1;
-                    other.previous = current;
-                    queue.add( other );
+            // ADAPTING COST VARIABLE:
+            double cost = 1;
+            if (path.length == 3) {
+                try {
+                    cost = Double.parseDouble(path[2]);
+                }
+                catch (ArithmeticException error) {
+                    System.out.println(
+                        "File format error, third character is not number in: " +
+                        path[0] + "->" + path[1]
+                    );
+                    return;
                 }
             }
-        }
-    }
 
-    /** DIJKSTRA:
-     * Dijkstra er en kjent CS dude, som fant opp denne algoritmen.
-     * Bruker størrelsesbasert prioritetskø til å alltid prosessere
-     * node med lavest "sti verdi". Man eliminerer ved  å se at det
-     * nåværende node er samme som en vi har sett tidligere og har
-     * prosessert/eliminert/"scratched". Dermed vet vi at den allerede,
-     * utenom å kjøre ikke kan finne bedre vei til enden.
-     *
-     * Bruker nivåorden traversering for å fylle prioritetskøen.
-     */
-    public void dijkstra( String startName ) throws Exception
-    {
-        PriorityQueue<Path> pq = new PriorityQueue<>();
-        Vertex start = dictionary.get(startName);
+            Vertex from = map.get(path[0]);
+            Vertex to   = map.get(path[1]);
 
-        if (start == null) {
-            throw new Exception();
-        }
-
-        clear();
-        pq.add( new Path(start, 0));
-        start.distance = 0;
-
-        int nodesSeen = 0;
-        while (!pq.isEmpty() && nodesSeen < dictionary.size( ) )
-        {
-            Path vrec = pq.remove();
-            Vertex v = vrec.dest;
-
-            // HVIS NODEN ER SETT:
-            if ( v.scratch ) continue;
-
-            v.scratch = true;
-            nodesSeen++;
-
-            for( Edge e : v.adj )
-            {
-                Vertex w = e.destination;
-                double cvw = e.cost; //KOSTNAD MELLOM V OG W
-
-                if ( cvw < 0 ) throw new Exception( );
-
-                if ( w.distance > v.distance + cvw ) {
-                    w.distance = v.distance + cvw;
-                    w.previous = v;
-                    pq.add( new Path( w, w.distance ) );
-                }
+            // IF "FROM" NODE IS NOT SEEN BEFORE:
+            if (from == null) {
+                from = new Vertex(path[0]);
+                map.put(path[0], from);
             }
+            // IF "TO" NODE IS NOT SEEN BEFORE:
+            if (to == null) {
+                to = new Vertex(path[1]);
+                map.put(path[1], to);
+            }
+
+            from.adj.add(new Edge(to, cost));
         }
     }
 
-    // UBRUKT OG IKKE PENSUM:
-    // public void negative()
-    // {}
 
-    // UBRUKT OG IKKE PENSUM:
-    // public void acyclic()
-    // {}
-
-    /**
-     * Gets a vertex if it exsists in the dictionary. Else
-     * it creates the vertex.
-     *
-     * @param name of Vertex, new or old.
-     * @return the vertex object.
-     */
-    private Vertex getVertex( String name )
+    private Vertex safeGet( String name )
     {
-        Vertex vertex = dictionary.get( name );
-
+        Vertex vertex = map.get(name);
         if ( vertex == null )
         {
-            vertex = new Vertex( name );
-            dictionary.put(name, vertex);
+            throw new NoSuchElementException("Cannot find element: " + name);
         }
-
         return vertex;
     }
 
-}
+    public void unweighted( String from, String to )
+    {
+        // TESTING EXTREME-POINTS FOR THE ANALYSIS:
+        Vertex start = safeGet(from);
+        start.distance = 0;
+        Vertex end   = safeGet(to);
 
+        LinkedList<Vertex> queue = new LinkedList<Vertex>();
+        queue.add(start);
+
+        // SEARCHING FOR FASTEST ROUTE
+        while( ! queue.isEmpty() )
+        {
+            Vertex v = queue.remove(0);
+            if (v != end)
+            {
+                for (Edge edge : v.adj)
+                {
+                    if (edge.destination.distance <= v.distance)
+                    {
+                        // NODEN HAR BLITT SETT FØR. INGEN BEDRING.
+                        continue;
+                    }
+                    edge.destination.previous = v;
+                    edge.destination.distance = v.distance + 1;
+                    queue.add(edge.destination);
+                }
+            }
+        }
+
+        if (end.previous == null) System.out.println(" END NOT FOUND :( ");
+        else System.out.println(" GREAT SUCCESS! FINISHED IN " + end.distance + "  STEPS.");
+
+    }
+
+    public void weighted( String from, String to )
+    {
+        Vertex start = safeGet(from);
+        Vertex end   = safeGet(to);
+
+        PriorityQueue<Vertex> queue = new PriorityQueue<>();
+        queue.add(start);
+        start.distance = 0;
+
+        while (! queue.isEmpty() ) {
+            Vertex v = queue.remove();
+
+            if (v.scratch) continue;
+            v.scratch = true;
+
+            for (Edge e : v.adj)
+            {
+                if (e.destination.scratch) continue;
+
+                if (v.distance + e.cost > e.destination.distance )
+                {
+                    // NODEN ER SETT OG HAR INGEN BEDRING.
+                    continue;
+                }
+                e.destination.distance = e.cost + v.distance;
+                e.destination.previous = v;
+                queue.add(e.destination);
+            }
+        }
+
+        if (end.previous != null) System.out.println( "YEEEY, GREAT SUCCESS! COST: " + end.distance);
+        else System.out.println( "ÅNEEEJ, VI TAPTA!");
+    }
+}
