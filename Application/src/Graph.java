@@ -1,3 +1,5 @@
+import com.sun.org.apache.xpath.internal.SourceTree;
+
 import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
@@ -158,5 +160,29 @@ import java.util.*;
 
         if (end.previous != null) System.out.println( "YEEEY, GREAT SUCCESS! COST: " + end.distance);
         else System.out.println( "ÅNEEEJ, VI TAPTA!");
+    }
+
+    public String printPath(String last) {
+        StringBuilder output = new StringBuilder("Path: ");
+
+        Vertex end = safeGet(last);
+        LinkedList<Vertex> stack = new LinkedList<>();
+        Vertex node = end;
+        stack.push(end);
+        while (node.previous != null)
+        {
+            stack.push(node.previous);
+            node = node.previous;
+        }
+
+        if (!stack.isEmpty()) output.append(stack.pop().name.toString());
+        while (!stack.isEmpty())
+        {
+            output.append(" -> ");
+            Vertex v = stack.pop();
+            output.append(v.name.toString());
+
+        }
+        return output.toString();
     }
 }

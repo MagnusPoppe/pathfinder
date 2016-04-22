@@ -9,11 +9,15 @@ public class tester {
 
     final static String FILENAME = "C:\\Users\\Magnu\\OneDrive\\Informatikk - Høyskolen i Telemark\\S4 V16   5610 Algoritmer og Datastrukturer\\Forelesning 3.5\\pathfinder\\Application\\src\\graph.txt";
 
+    final static String start   = "A";
+    final static String end     = "D";
+
     public static void main(String[] args)
     {
         Graph g = createWithStats( FILENAME );
-        //g.unweighted("A", "B");
-        g.weighted("A", "B");
+        //g.unweighted(start, end);
+        g.weighted(start, end);
+        System.out.println(g.printPath(end));
     }
 
     private static Graph createWithStats( String file )
