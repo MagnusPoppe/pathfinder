@@ -28,7 +28,7 @@ class Vertex implements Comparable<Vertex>
 
     void reset( )
     {
-        distance = Graph.INFINITY;
+        distance = myGraph.INFINITY;
         previous = null;
         // pos = null;
         scratch = false;

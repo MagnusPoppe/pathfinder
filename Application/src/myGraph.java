@@ -8,7 +8,7 @@ import java.util.*;
 /**
  * Created by Magnu on 21.04.2016.
  */
- class Graph {
+ class myGraph {
 
     // KONSTANTER:
     final static double INFINITY = Double.MAX_VALUE;
@@ -18,7 +18,7 @@ import java.util.*;
     int nodes;
 
     // KONSTRUKTØR:
-    Graph(String filename)
+    myGraph(String filename)
     {
         Scanner reader;
         try {
@@ -163,25 +163,26 @@ import java.util.*;
     }
 
     public String printPath(String last) {
-        StringBuilder output = new StringBuilder("Path: ");
 
+        // GETTING THE OBJECTS NEEDED:
         Vertex end = safeGet(last);
         LinkedList<Vertex> stack = new LinkedList<>();
         Vertex node = end;
+
+        // PLACING NODES ON STACK:
         stack.push(end);
-        while (node.previous != null)
-        {
+        while (node.previous != null) {
             stack.push(node.previous);
             node = node.previous;
         }
 
-        if (!stack.isEmpty()) output.append(stack.pop().name.toString());
-        while (!stack.isEmpty())
-        {
-            output.append(" -> ");
-            Vertex v = stack.pop();
-            output.append(v.name.toString());
-
+        // PRINTING THE PATH:
+        StringBuilder output = new StringBuilder("Path: ");
+        if (!stack.isEmpty()) {
+            output.append(stack.pop().name.toString());
+        }
+        while (!stack.isEmpty()) {
+            output.append(" -> " + stack.pop().name.toString());
         }
         return output.toString();
     }

@@ -1,8 +1,8 @@
 /**
  * Created by Magnus Poppe Wang on 21.04.2016.
- * Class created to test the class "Graph".
+ * Class created to test the class "myGraph".
  *
- * @see Graph
+ * @see myGraph
  */
 public class tester {
 
@@ -14,15 +14,15 @@ public class tester {
 
     public static void main(String[] args)
     {
-        Graph g = createWithStats( FILENAME );
+        myGraph g = createWithStats( FILENAME );
         //g.unweighted(start, end);
         g.weighted(start, end);
         System.out.println(g.printPath(end));
     }
 
-    private static Graph createWithStats( String file )
+    private static myGraph createWithStats(String file )
     {
-        Graph g = new Graph( file );
+        myGraph g = new myGraph( file );
 
         // PRINTING STATS:
         System.out.println("GRAPH CREATION STATISTICS");
